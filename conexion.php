@@ -1,10 +1,10 @@
 <?php
 $conn = pg_connect("
     host=localhost
-    port=5432
-    dbname=bdentrega2
-    user=postgres
-    password=a
+    port=[colocar]
+    dbname=bdentrega4
+    user=[colocar]
+    password=[colocar]
 ");
 
 if (!$conn) {
