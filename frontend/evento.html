@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Eventos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar {
+            background-color: #4CAF50;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .navbar h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .navbar-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 1;
+        }
+        .navbar a {
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .navbar a.active {
+            background-color: white;
+            color: #4CAF50;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .busqueda-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .busqueda-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .busqueda-form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .busqueda-form button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .busqueda-form button:hover {
+            background-color: #0b7dda;
+        }
+        .resultado-fecha {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .resultado-fecha.visible {
+            display: block;
+        }
+        .eventos-fecha-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .evento-fecha-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .evento-fecha-item h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .evento-fecha-item p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .seccion {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.btn-danger {
+            background-color: #f44336;
+        }
+        button.btn-danger:hover {
+            background-color: #da190b;
+        }
+        button.btn-secondary {
+            background-color: #2196F3;
+        }
+        button.btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+        .lista-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background-color: #ffebee;
+            border: 1px solid red;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .success {
+            color: green;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border: 1px solid green;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .vacio {
+            color: #666;
+            padding: 20px;
+            text-align: center;
+        }
+        .cargando {
+            color: #666;
+            padding: 20px;
+            text-align: center;
+        }
+        .volver {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .volver:hover {
+            background-color: #45a049;
+        }
+        .btn-accion {
+            padding: 4px 8px;
+            font-size: 11px;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>SoyUCAB</h1>
+            <div class="navbar-buttons">
+                <a href="publicacion.html">Publicaciones</a>
+                <a href="persona.html">Personas</a>
+                <a href="evento.html" class="active">Eventos</a>
+                <a href="#">Grupos</a>
+                <a href="reportes.html">Reportes</a>
+                <a href="mapa.html">Mapa</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Barra de eventos por fecha -->
+        <div class="busqueda-container">
+            <h2>Eventos Programados por Fecha</h2>
+            <div class="busqueda-form">
+                <button type="button" onclick="mostrarEventosPorFecha()">Mostrar Todos los Eventos por Fecha</button>
+                <button type="button" class="btn-secondary" onclick="mostrarCRUD()">Mostrar CRUD</button>
+            </div>
+        </div>
+
+        <!-- Resultados de eventos por fecha -->
+        <div id="resultadoFecha" class="resultado-fecha">
+            <div id="resultadoFechaContenido"></div>
+        </div>
+
+        <!-- CRUD -->
+        <div id="crudContainer">
+            <div class="grid">
+        <!-- Sección 1: Crear -->
+        <div class="seccion">
+            <h2>Crear Evento</h2>
+            <form id="formCrear">
+                <label>Nombre del Evento *:</label>
+                <input name="nombre" required>
+
+                <label>Lugar del Evento *:</label>
+                <input name="lugar" required>
+
+                <label>Descripción *:</label>
+                <textarea name="descripcion" required></textarea>
+
+                <label>Fecha Inicio *:</label>
+                <input type="date" name="inicio" required>
+
+                <label>Fecha Fin *:</label>
+                <input type="date" name="fin" required>
+
+                <label>Hora Inicio *:</label>
+                <input type="time" name="hora_inicio" required>
+
+                <label>Hora Fin *:</label>
+                <input type="time" name="hora_fin" required>
+
+                <label>Estado *:</label>
+                <select name="estado" required>
+                    <option value="publico">Público</option>
+                    <option value="privado">Privado</option>
+                    <option value="secreto">Secreto</option>
+                </select>
+
+                <label>Ciclo de Vida *:</label>
+                <select name="ciclo" required>
+                    <option value="borrador">Borrador</option>
+                    <option value="publicado">Publicado</option>
+                    <option value="en curso">En Curso</option>
+                    <option value="finalizado">Finalizado</option>
+                    <option value="archivado">Archivado</option>
+                </select>
+
+                <label>Tipo *:</label>
+                <select name="tipo" required>
+                    <option value="presencial">Presencial</option>
+                    <option value="virtual">Virtual</option>
+                </select>
+
+                <label>Tipo de Organizador *:</label>
+                <select name="organizador_tipo" id="organizador_tipo" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="Persona">Persona</option>
+                    <option value="Grupo">Grupo</option>
+                    <option value="Dependencia">Dependencia</option>
+                    <option value="Organizacion">Organización</option>
+                </select>
+
+                <label>Nombre del Organizador *:</label>
+                <input type="text" name="organizador_nombre" id="organizador_nombre" required>
+
+                <button type="submit">Crear Evento</button>
+                <div id="mensajeCrear"></div>
+            </form>
+        </div>
+
+        <!-- Sección 2: Listar -->
+        <div class="seccion">
+            <h2>Lista de Eventos</h2>
+            <div class="lista-container">
+                <div id="listaEventos">
+                    <div class="cargando">Cargando eventos...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 3: Editar -->
+        <div class="seccion">
+            <h2>Editar Evento</h2>
+            <form id="formEditar">
+                <label>ID de Evento *:</label>
+                <input type="number" name="id" id="editId" required>
+
+                <label>Nombre del Evento *:</label>
+                <input name="nombre" id="editNombre" required>
+
+                <label>Lugar del Evento *:</label>
+                <input name="lugar" id="editLugar" required>
+
+                <label>Descripción *:</label>
+                <textarea name="descripcion" id="editDescripcion" required></textarea>
+
+                <label>Fecha Inicio *:</label>
+                <input type="date" name="inicio" id="editInicio" required>
+
+                <label>Fecha Fin *:</label>
+                <input type="date" name="fin" id="editFin" required>
+
+                <label>Hora Inicio *:</label>
+                <input type="time" name="hora_inicio" id="editHoraInicio" required>
+
+                <label>Hora Fin *:</label>
+                <input type="time" name="hora_fin" id="editHoraFin" required>
+
+                <label>Estado *:</label>
+                <select name="estado" id="editEstado" required>
+                    <option value="publico">Público</option>
+                    <option value="privado">Privado</option>
+                    <option value="secreto">Secreto</option>
+                </select>
+
+                <label>Ciclo de Vida *:</label>
+                <select name="ciclo" id="editCiclo" required>
+                    <option value="borrador">Borrador</option>
+                    <option value="publicado">Publicado</option>
+                    <option value="en curso">En Curso</option>
+                    <option value="finalizado">Finalizado</option>
+                    <option value="archivado">Archivado</option>
+                </select>
+
+                <label>Tipo *:</label>
+                <select name="tipo" id="editTipo" required>
+                    <option value="presencial">Presencial</option>
+                    <option value="virtual">Virtual</option>
+                </select>
+
+                <label>Tipo de Organizador *:</label>
+                <select name="organizador_tipo" id="editOrgTipo" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="Persona">Persona</option>
+                    <option value="Grupo">Grupo</option>
+                    <option value="Dependencia">Dependencia</option>
+                    <option value="Organizacion">Organización</option>
+                </select>
+
+                <label>Nombre del Organizador *:</label>
+                <input type="text" name="organizador_nombre" id="editOrgNombre" required>
+
+                <button type="button" class="btn-secondary" onclick="cargarEventoEditar()">Cargar Datos</button>
+                <button type="submit">Actualizar Evento</button>
+                <div id="mensajeEditar"></div>
+            </form>
+        </div>
+
+        <!-- Sección 4: Eliminar -->
+        <div class="seccion">
+            <h2>Eliminar Evento</h2>
+            <form id="formEliminar">
+                <label>ID de Evento a Eliminar *:</label>
+                <input type="number" name="id" id="deleteId" required min="1">
+
+                <button type="submit" class="btn-danger">Eliminar Evento</button>
+                <div id="mensajeEliminar"></div>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        if (window.location.protocol === 'file:') {
+            document.body.innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <div class="error">
+                        <strong>Error:</strong> Estás abriendo el archivo directamente.<br><br>
+                        <strong>Debes acceder desde el servidor PHP:</strong><br>
+                        1. Ejecuta <code>iniciar-servidor.bat</code><br>
+                        2. Abre en el navegador: <code>http://localhost:8000/frontend/evento.html</code><br>
+                        3. NO abras el archivo directamente con doble clic
+                    </div>
+                </div>
+            `;
+        }
+
+        async function cargarEventos() {
+            const listaEventos = document.getElementById('listaEventos');
+            
+            try {
+                const response = await fetch(`${baseUrl}/backend/evento.php?accion=listar`);
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    listaEventos.innerHTML = `<div class="error">Error: La respuesta del servidor no es JSON válido. ${text.substring(0, 300)}</div>`;
+                    return;
+                }
+                
+                if (!data.success) {
+                    listaEventos.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (!data.eventos || data.eventos.length === 0) {
+                    listaEventos.innerHTML = '<div class="vacio">No hay eventos registrados.</div>';
+                    return;
+                }
+                
+                let tabla = `
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Lugar</th>
+                            <th>Descripción</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Hora Inicio</th>
+                            <th>Hora Fin</th>
+                            <th>Estado</th>
+                            <th>Ciclo</th>
+                            <th>Tipo</th>
+                            <th>Tipo Org.</th>
+                            <th>Nombre Org.</th>
+                        </tr>
+                `;
+                data.eventos.forEach(evento => {
+                    tabla += `
+                        <tr>
+                            <td>${evento.id_evento || ''}</td>
+                            <td>${evento.nombre_evento || ''}</td>
+                            <td>${evento.lugar_evento || ''}</td>
+                            <td>${evento.descripcion || ''}</td>
+                            <td>${evento.fecha_inicio || ''}</td>
+                            <td>${evento.fecha_fin || ''}</td>
+                            <td>${evento.hora_inicio || ''}</td>
+                            <td>${evento.hora_fin || ''}</td>
+                            <td>${evento.estado || ''}</td>
+                            <td>${evento.ciclo_vida || ''}</td>
+                            <td>${evento.tipo || ''}</td>
+                            <td>${evento.organizador_tipo || ''}</td>
+                            <td>${evento.organizador_nombre || 'No especificado'}</td>
+                        </tr>
+                    `;
+                });
+                tabla += '</table>';
+                listaEventos.innerHTML = tabla;
+                
+            } catch (error) {
+                listaEventos.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function cargarEventoEditar() {
+            const id = document.getElementById('editId').value;
+            if (!id) {
+                mostrarMensaje('mensajeEditar', 'Por favor ingresa el ID del evento', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/evento.php?accion=obtener&id=${id}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    mostrarMensaje('mensajeEditar', data.error, 'error');
+                    return;
+                }
+                
+                const evento = data.evento;
+                document.getElementById('editId').value = evento.id_evento || '';
+                document.getElementById('editNombre').value = evento.nombre_evento || '';
+                document.getElementById('editLugar').value = evento.lugar_evento || '';
+                document.getElementById('editDescripcion').value = evento.descripcion || '';
+                document.getElementById('editInicio').value = evento.fecha_inicio || '';
+                document.getElementById('editFin').value = evento.fecha_fin || '';
+                document.getElementById('editHoraInicio').value = evento.hora_inicio || '';
+                document.getElementById('editHoraFin').value = evento.hora_fin || '';
+                document.getElementById('editEstado').value = evento.estado || 'publico';
+                document.getElementById('editCiclo').value = evento.ciclo_vida || 'borrador';
+                document.getElementById('editTipo').value = evento.tipo || 'presencial';
+                document.getElementById('editOrgTipo').value = evento.organizador_tipo || '';
+                document.getElementById('editOrgNombre').value = evento.organizador_nombre || '';
+                
+                mostrarMensaje('mensajeEditar', 'Datos cargados correctamente', 'success');
+            } catch (error) {
+                mostrarMensaje('mensajeEditar', 'Error: ' + error.message, 'error');
+            }
+        }
+
+        function editarEvento(id) {
+            document.getElementById('editId').value = id;
+            cargarEventoEditar();
+        }
+
+        function eliminarEvento(id) {
+            if (confirm(`¿Estás seguro de eliminar el evento con ID ${id}?`)) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('formEliminar').dispatchEvent(new Event('submit'));
+            }
+        }
+
+        document.getElementById('formCrear').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'crear');
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/evento.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    mostrarMensaje('mensajeCrear', 'Error: La respuesta del servidor no es JSON válido. ' + text.substring(0, 200), 'error');
+                    return;
+                }
+                
+                if (data.success) {
+                    mostrarMensaje('mensajeCrear', 'Evento creado exitosamente', 'success');
+                    this.reset();
+                    cargarEventos();
+                } else {
+                    mostrarMensaje('mensajeCrear', data.error, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje('mensajeCrear', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('formEditar').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'actualizar');
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/evento.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarMensaje('mensajeEditar', 'Evento actualizado exitosamente', 'success');
+                    cargarEventos();
+                } else {
+                    mostrarMensaje('mensajeEditar', data.error, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje('mensajeEditar', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('formEliminar').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'eliminar');
+
+            if (!confirm('¿Estás seguro de eliminar este evento?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/evento.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarMensaje('mensajeEliminar', 'Evento eliminado exitosamente', 'success');
+                    this.reset();
+                    cargarEventos();
+                } else {
+                    mostrarMensaje('mensajeEliminar', data.error, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje('mensajeEliminar', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        function mostrarMensaje(id, mensaje, tipo) {
+            const div = document.getElementById(id);
+            div.innerHTML = `<div class="${tipo}">${mensaje}</div>`;
+            setTimeout(() => {
+                div.innerHTML = '';
+            }, 5000);
+        }
+
+        function mostrarCRUD() {
+            document.getElementById('crudContainer').style.display = 'block';
+            document.getElementById('resultadoFecha').classList.remove('visible');
+        }
+
+        function ocultarCRUD() {
+            document.getElementById('crudContainer').style.display = 'none';
+        }
+
+        async function mostrarEventosPorFecha() {
+            const resultadoContenido = document.getElementById('resultadoFechaContenido');
+            resultadoContenido.innerHTML = '<div class="cargando">Cargando eventos...</div>';
+            document.getElementById('resultadoFecha').classList.add('visible');
+            ocultarCRUD();
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/evento.php?accion=porFecha`);
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    resultadoContenido.innerHTML = `<div class="error">Error: La respuesta del servidor no es JSON válido. ${text.substring(0, 200)}</div>`;
+                    return;
+                }
+                
+                if (!data.success) {
+                    resultadoContenido.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (!data.eventosPorFecha || data.eventosPorFecha.length === 0) {
+                    resultadoContenido.innerHTML = '<div class="vacio">No hay eventos programados.</div>';
+                    return;
+                }
+                
+                let html = '<div class="eventos-fecha-container">';
+                html += '<h3>Eventos Programados por Fecha:</h3>';
+                
+                data.eventosPorFecha.forEach(grupo => {
+                    const fecha = grupo.fecha;
+                    const eventos = grupo.eventos;
+                    
+                    html += `<div style="margin-bottom: 30px; padding: 20px; background-color: #f0f0f0; border-radius: 5px;">`;
+                    html += `<h3 style="color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; margin-bottom: 15px;">${fecha}</h3>`;
+                    
+                    eventos.forEach(evento => {
+                        html += '<div class="evento-fecha-item">';
+                        html += `<h4>${evento.nombre_evento || ''}</h4>`;
+                        html += `<p><strong>Lugar:</strong> ${evento.lugar_evento || ''}</p>`;
+                        html += `<p><strong>Descripción:</strong> ${evento.descripcion || ''}</p>`;
+                        html += `<p><strong>Hora Inicio:</strong> ${evento.hora_inicio || ''}</p>`;
+                        html += `<p><strong>Hora Fin:</strong> ${evento.hora_fin || ''}</p>`;
+                        html += `<p><strong>Estado:</strong> ${evento.estado || ''}</p>`;
+                        html += `<p><strong>Tipo:</strong> ${evento.tipo || ''}</p>`;
+                        if (evento.organizador_nombre) {
+                            html += `<p><strong>Organizador:</strong> ${evento.organizador_nombre} (${evento.organizador_tipo || ''})</p>`;
+                        } else if (evento.organizador_tipo) {
+                            html += `<p><strong>Organizador:</strong> ${evento.organizador_tipo} - ID: ${evento.organizador_id || 'No especificado'}</p>`;
+                        } else {
+                            html += `<p><strong>Organizador:</strong> No especificado</p>`;
+                        }
+                        html += '</div>';
+                    });
+                    
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+                resultadoContenido.innerHTML = html;
+                
+            } catch (error) {
+                resultadoContenido.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        cargarEventos();
+    </script>
+</body>
+</html>

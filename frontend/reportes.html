@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Reportes</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; border: 1px solid #ddd; padding: 15px; border-radius: 4px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, button,textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .btn-delete { background-color: #dc3545; padding: 5px; font-size: 12px; }
+        .big-number { font-size: 2.5em; color: #007bff; font-weight: bold; }
+
+        .navbar {
+            background-color: #4CAF50;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .navbar h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .navbar-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 1;
+        }
+        .navbar a {
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .navbar a.active {
+            background-color: white;
+            color: #4CAF50;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>SoyUCAB</h1>
+            <div class="navbar-buttons">
+                <a href="publicacion.html">Publicaciones</a>
+                <a href="persona.html">Personas</a>
+                <a href="evento.html">Eventos</a>
+                <a href="#">Grupos</a>
+                <a href="reportes.html" class="active">Reportes</a>
+                <a href="mapa.html">Mapa</a>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="container">
+        <h1>Reportes</h1>
+        <div class="grid">
+            <div class="card">
+                <h3>Total Miembros Registrados</h3>
+                <div id="total-miembros" class="big-number">...</div>
+            </div>
+
+            <div class="card">
+                <h3>Países con más Egresados</h3>
+                <table id="tabla-paises">
+                    <thead><tr><th>País</th><th>Egresados</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Top 10 Usuarios Activos (Mes)</h3>
+                <table id="tabla-usuarios">
+                    <thead><tr><th>Nombre</th><th>Posts</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function cargarReportes() {
+            //  Cargar Total Miembros
+  const elementoTotal = document.getElementById('total-miembros');
+
+    try {
+        // Cargar Total Miembros
+        const resTotal = await fetch('../backend/reportes.php?tipo=total_miembros');
+        if (resTotal.ok) {
+            const data = await resTotal.json();
+            // Usamos la variable ya declarada arriba
+            if (elementoTotal) {
+                elementoTotal.textContent = data.total; 
+            }
+        }
+
+        // ... resto de tus fetch (paises, usuarios) ...
+
+    } catch (error) {
+        console.error("Error en cargarReportes:", error);
+        if (elementoTotal) elementoTotal.textContent = "Error";
+    }
+
+            //  Cargar Países 
+            const resPaises = await fetch('../backend/reportes.php?tipo=ranking_paises');
+            const paises = await resPaises.json();
+            const tbodyP = document.querySelector('#tabla-paises tbody');
+            paises.forEach(p => {
+                tbodyP.innerHTML += `<tr><td>${p.pais}</td><td>${p.total}</td></tr>`;
+            });
+
+            //  Cargar Usuarios 
+            const resUsers = await fetch('../backend/reportes.php?tipo=ranking_usuarios');
+            const users = await resUsers.json();
+            const tbodyU = document.querySelector('#tabla-usuarios tbody');
+            users.forEach(u => {
+                tbodyU.innerHTML += `<tr><td>${u.nombres} ${u.apellidos}</td><td>${u.total}</td></tr>`;
+            });
+        }
+
+        window.onload = cargarReportes;
+    </script>
+</body>
+</html>

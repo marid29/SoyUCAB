@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Personas</title>
+    <style>
+        :root {
+            --panel-bg: #ffffff;
+            --accent: #0f8b8d;
+            --accent-dark: #0c6d6f;
+            --text-dark: #1f2933;
+            --muted: #6b7280;
+            --border-soft: #e5e7eb;
+            --chat-bg: #f5f7fb;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar {
+            background-color: #4CAF50;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .navbar h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .navbar-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 1;
+        }
+        .navbar a {
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .navbar a.active {
+            background-color: white;
+            color: #4CAF50;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .ventana-grupos {
+            background-color: var(--panel-bg);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 25px 60px rgba(15, 139, 141, 0.1);
+            margin-bottom: 32px;
+            border: 1px solid rgba(15, 139, 141, 0.08);
+            animation: fadeIn 0.5s ease;
+        }
+        .ventana-header h2 {
+            margin: 0;
+            font-size: 26px;
+            color: var(--text-dark);
+        }
+        .ventana-header p {
+            margin: 6px 0 18px;
+            color: var(--muted);
+        }
+        .grupos-layout {
+            display: grid;
+            grid-template-columns: minmax(260px, 0.85fr) 1.4fr;
+            gap: 24px;
+        }
+        .panel {
+            background-color: var(--chat-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-soft);
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+        .group-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
+            padding: 14px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            align-items: center;
+        }
+        .group-item:hover {
+            background-color: rgba(15, 139, 141, 0.08);
+        }
+        .group-item.active {
+            background-color: rgba(15, 139, 141, 0.15);
+            border: 1px solid rgba(15, 139, 141, 0.2);
+        }
+        .group-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .group-info h3 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+        .group-info p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .group-meta {
+            text-align: right;
+        }
+        .group-meta .time {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .group-meta .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background-color: var(--accent);
+            color: white;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        .panel-conversacion {
+            background-color: var(--panel-bg);
+        }
+        .conversacion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .conversacion-header h3 {
+            margin: 0;
+            color: var(--text-dark);
+            font-size: 20px;
+        }
+        .conversacion-header p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .tag {
+            border: none;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background-color: rgba(15, 139, 141, 0.1);
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .timeline {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .timeline-badge {
+            background-color: var(--border-soft);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .timeline-line {
+            flex: 1;
+            height: 1px;
+            background-color: var(--border-soft);
+        }
+        .mensaje-lista {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .mensaje {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .mensaje .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: rgba(15, 139, 141, 0.12);
+            color: var(--accent-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .mensaje .burbuja {
+            background-color: rgba(15, 139, 141, 0.08);
+            padding: 12px 16px;
+            border-radius: 14px;
+            flex: 1;
+            border: 1px solid rgba(15, 139, 141, 0.1);
+        }
+        .mensaje.outgoing {
+            flex-direction: row-reverse;
+        }
+        .mensaje.outgoing .burbuja {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+        }
+        .mensaje header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--muted);
+        }
+        .mensaje.outgoing header {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .mensaje .autor {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .mensaje.outgoing .autor {
+            color: white;
+        }
+        .evento-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px dashed rgba(15, 139, 141, 0.4);
+        }
+        .evento-card p {
+            margin: 4px 0;
+            font-size: 13px;
+            color: var(--text-dark);
+        }
+        .evento-card .evento-label {
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+        }
+        .publicacion-card {
+            border-radius: 12px;
+            border: 1px solid rgba(15, 139, 141, 0.15);
+            overflow: hidden;
+        }
+        .publicacion-card .caption {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--text-dark);
+        }
+        .composer {
+            border-top: 1px solid var(--border-soft);
+            margin-top: 22px;
+            padding-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .composer-tools {
+            display: flex;
+            gap: 10px;
+        }
+        .tool-button {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 1px solid var(--border-soft);
+            background-color: white;
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .composer-action {
+            display: flex;
+            gap: 12px;
+        }
+        .composer-action input {
+            flex: 1;
+            border-radius: 12px;
+            border: 1px solid var(--border-soft);
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+        .composer-action button {
+            border-radius: 12px;
+            background-color: var(--accent);
+            border: none;
+            padding: 0 22px;
+            font-weight: 600;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 1100px) {
+            .grupos-layout {
+                grid-template-columns: 1fr;
+            }
+            .conversacion-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>SoyUCAB</h1>
+            <div class="navbar-buttons">
+                <a href="publicacion.html">Publicaciones</a>
+                <a href="persona.html">Personas</a>
+                <a href="evento.html">Eventos</a>
+                <a href="grupo.html" class="active">Grupos</a>
+                <a href="reportes.html">Reportes</a>
+                <a href="mapa.html">Mapa</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Panel visual de grupos y mensajes -->
+        <div class="ventana-grupos">
+            <div class="ventana-header">
+                <h2>Conversaciones de Grupos</h2>
+                <p>Visualiza tus equipos, revisa eventos y responde mensajes desde un solo lugar.</p>
+            </div>
+            <div class="grupos-layout">
+                <div class="panel panel-grupos">
+                    <div class="panel-title">Grupos</div>
+                    <div class="group-item active">
+                        <div class="group-avatar">BD</div>
+                        <div class="group-info">
+                            <h3>Base de Datos</h3>
+                            <p>Juan: Dale</p>
+                        </div>
+                        <div class="group-meta">
+                            <span class="time">4:28</span>
+                            <span class="badge">2</span>
+                        </div>
+                    </div>
+                    <div class="group-item">
+                        <div class="group-avatar">II</div>
+                        <div class="group-info">
+                            <h3>Ing. Informática</h3>
+                            <p>Marco: Ok</p>
+                        </div>
+                        <div class="group-meta">
+                            <span class="time">10:36</span>
+                            <span class="badge">17</span>
+                        </div>
+                    </div>
+                    <div class="group-item">
+                        <div class="group-avatar">CE</div>
+                        <div class="group-info">
+                            <h3>CEI</h3>
+                            <p>Mariadelia: Chévere</p>
+                        </div>
+                        <div class="group-meta">
+                            <span class="time">Ayer</span>
+                        </div>
+                    </div>
+                </div>
+                <section class="panel panel-conversacion">
+                    <div class="conversacion-header">
+                        <div>
+                            <h3>Base de Datos</h3>
+                            <p>Juan, Marco, Mariadelia</p>
+                        </div>
+                        <button class="tag" type="button">Hoy</button>
+                    </div>
+                    <div class="timeline">
+                        <span class="timeline-badge">Hoy</span>
+                        <span class="timeline-line"></span>
+                    </div>
+                    <div class="mensaje-lista">
+                        <article class="mensaje incoming">
+                            <div class="avatar">Md</div>
+                            <div class="burbuja">
+                                <header>
+                                    <span class="autor">Mariadelia</span>
+                                    <span class="hora">09:10</span>
+                                </header>
+                                <div class="evento-card">
+                                    <p class="evento-label">Nuevo evento</p>
+                                    <p>Reunión de equipo</p>
+                                    <p>Cuándo: 03/10/2025</p>
+                                    <p>Hora: 10:00 a. m.</p>
+                                    <p>Dónde: Meet</p>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="mensaje incoming">
+                            <div class="avatar">Ma</div>
+                            <div class="burbuja">
+                                <header>
+                                    <span class="autor">Marco</span>
+                                    <span class="hora">09:42</span>
+                                </header>
+                                <p style="margin: 0 0 10px; color: var(--text-dark); font-weight: 600;">Nueva publicación</p>
+                                <div class="publicacion-card">
+                                    <div class="caption">Plan de investigación actualizado. Revisen la sección de pruebas.</div>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="mensaje outgoing">
+                            <div class="avatar">Ju</div>
+                            <div class="burbuja">
+                                <header>
+                                    <span class="autor">Juan</span>
+                                    <span class="hora">09:50</span>
+                                </header>
+                                <p style="margin: 0;">Buenísimo</p>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="composer">
+                        <div class="composer-tools">
+                            <button class="tool-button" type="button" aria-label="Compartir cámara">CAM</button>
+                            <button class="tool-button" type="button" aria-label="Adjuntar imagen">IMG</button>
+                            <button class="tool-button" type="button" aria-label="Compartir archivo">DOC</button>
+                            <button class="tool-button" type="button" aria-label="Programar evento">EVT</button>
+                        </div>
+                        <div class="composer-action">
+                            <input type="text" placeholder="Escribe un mensaje" aria-label="Escribe un mensaje">
+                            <button type="button">Enviar</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        if (window.location.protocol === 'file:') {
+            document.body.innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <div class="error">
+                        <strong>Error:</strong> Estás abriendo el archivo directamente.<br><br>
+                        <strong>Debes acceder desde el servidor PHP:</strong><br>
+                        1. Ejecuta <code>iniciar-servidor.bat</code><br>
+                        2. Abre en el navegador: <code>http://localhost:8000/frontend/persona.html</code><br>
+                        3. NO abras el archivo directamente con doble clic
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

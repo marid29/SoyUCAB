@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Personas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar {
+            background-color: #4CAF50;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .navbar h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .navbar-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 1;
+        }
+        .navbar a {
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .navbar a.active {
+            background-color: white;
+            color: #4CAF50;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .busqueda-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .busqueda-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .busqueda-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .busqueda-form button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .busqueda-form button:hover {
+            background-color: #0b7dda;
+        }
+        .resultado-busqueda {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .resultado-busqueda.visible {
+            display: block;
+        }
+        .perfil-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .perfil-info {
+            padding: 15px;
+        }
+        .perfil-info h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .perfil-info p {
+            margin: 8px 0;
+            color: #555;
+        }
+        .perfil-info strong {
+            color: #333;
+        }
+        .publicaciones-container {
+            padding: 15px;
+        }
+        .publicaciones-container h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            grid-column: 1 / -1;
+        }
+        .publicaciones-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .publicacion-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            display: flex;
+            flex-direction: column;
+        }
+        .publicacion-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-top: 10px;
+            background-color: #ddd;
+        }
+        .publicacion-item p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .seccion {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.btn-danger {
+            background-color: #f44336;
+        }
+        button.btn-danger:hover {
+            background-color: #da190b;
+        }
+        button.btn-secondary {
+            background-color: #2196F3;
+        }
+        button.btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+        .lista-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background-color: #ffebee;
+            border: 1px solid red;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .success {
+            color: green;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border: 1px solid green;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .vacio {
+            color: #666;
+            padding: 20px;
+            text-align: center;
+        }
+        .cargando {
+            color: #666;
+            padding: 20px;
+            text-align: center;
+        }
+        .btn-accion {
+            padding: 4px 8px;
+            font-size: 11px;
+            margin: 2px;
+        }
+        .resultados-lista {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .resultado-item {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .resultado-item:hover {
+            background-color: #f5f5f5;
+        }
+        .resultado-item:last-child {
+            border-bottom: none;
+        }
+        .resultado-item h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .resultado-item p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>SoyUCAB</h1>
+            <div class="navbar-buttons">
+                <a href="publicacion.html">Publicaciones</a>
+                <a href="persona.html" class="active">Personas</a>
+                <a href="evento.html">Eventos</a>
+                <a href="#">Grupos</a>
+                <a href="reportes.html">Reportes</a>
+                <a href="mapa.html">Mapa</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Requisito 1: Consultar perfil completo -->
+        <div class="busqueda-container">
+            <h2>Consultar Perfil Completo de un Miembro</h2>
+            <form class="busqueda-form" id="formBusquedaPerfil">
+                <input type="number" id="buscarId" placeholder="ID de persona (perfil completo)">
+                <button type="button" class="btn-secondary" onclick="verPerfilCompleto()">Ver Perfil Completo</button>
+            </form>
+        </div>
+
+        <!-- Requisito 2: Buscar personas por nombre y ocupación -->
+        <div class="busqueda-container">
+            <h2>Buscar Personas por Nombre y Ocupación</h2>
+            <form class="busqueda-form" id="formBusqueda">
+                <input type="text" id="buscarNombre" placeholder="Buscar por nombre...">
+                <input type="text" id="buscarOcupacion" placeholder="Buscar por ocupación...">
+                <button type="button" onclick="buscarPersonas()">Buscar</button>
+            </form>
+        </div>
+
+        <!-- Botón para mostrar CRUD -->
+        <div class="busqueda-container" style="margin-bottom: 20px;">
+            <button type="button" onclick="mostrarCRUD()" style="width: 100%;">Mostrar CRUD</button>
+        </div>
+
+        <!-- Resultados de búsqueda -->
+        <div id="resultadoBusqueda" class="resultado-busqueda">
+            <div id="resultadoContenido"></div>
+        </div>
+
+        <!-- CRUD (oculto por defecto, se muestra con botón) -->
+        <div id="crudContainer">
+            <div class="grid">
+                <!-- Sección 1: Crear -->
+                <div class="seccion">
+                    <h2>Crear Persona</h2>
+                    <form id="formCrear">
+                        <label>Correo *:</label>
+                        <input type="email" name="correo" required>
+
+                        <label>Nombres *:</label>
+                        <input name="nombres" required>
+
+                        <label>Apellidos *:</label>
+                        <input name="apellidos" required>
+
+                        <label>Fecha de Nacimiento:</label>
+                        <input type="date" name="fecha">
+
+                        <label>Sexo:</label>
+                        <select name="sexo">
+                            <option value="">Seleccionar...</option>
+                            <option value="F">Femenino</option>
+                            <option value="M">Masculino</option>
+                        </select>
+
+                        <label>Ocupación:</label>
+                        <select name="ocupacion" id="ocupacion" onchange="mostrarCampoTipoOcupacion()">
+                            <option value="">Seleccionar...</option>
+                            <option value="estudiante">Estudiante</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="administrativo">Administrativo</option>
+                            <option value="obrero">Obrero</option>
+                        </select>
+
+                        <div id="tipoOcupacionContainer" style="display: none;">
+                            <label id="tipoOcupacionLabel" style="display: none;">Tipo:</label>
+                            <select name="tipo_ocupacion" id="tipoOcupacion" style="display: none;">
+                            </select>
+                        </div>
+
+                        <label>Celular (formato: +584121234567):</label>
+                        <input name="celular" pattern="^\+[0-9]{10,15}$" placeholder="+584121234567">
+
+                        <label>Ubicación:</label>
+                        <select name="ubicacion">
+                            <option value="">Seleccionar...</option>
+                            <option value="Venezuela">Venezuela</option>
+                            <option value="Argentina">Argentina</option>
+                            <option value="España">España</option>
+                            <option value="Italia">Italia</option>
+                            <option value="Estados Unidos">Estados Unidos</option>
+                        </select>
+
+                        <button type="submit">Crear Persona</button>
+                        <div id="mensajeCrear"></div>
+                    </form>
+                </div>
+
+                <!-- Sección 2: Listar -->
+                <div class="seccion">
+                    <h2>Lista de Personas</h2>
+                    <div class="lista-container">
+                        <div id="listaPersonas">
+                            <div class="cargando">Cargando personas...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Editar -->
+                <div class="seccion">
+                    <h2>Editar Persona</h2>
+                    <form id="formEditar">
+                        <label>ID de Persona *:</label>
+                        <input type="number" name="id" id="editId" required>
+
+                        <label>Correo *:</label>
+                        <input type="email" name="correo" id="editCorreo" required>
+
+                        <label>Nombres *:</label>
+                        <input name="nombres" id="editNombres" required>
+
+                        <label>Apellidos *:</label>
+                        <input name="apellidos" id="editApellidos" required>
+
+                        <label>Fecha de Nacimiento:</label>
+                        <input type="date" name="fecha" id="editFecha">
+
+                        <label>Sexo:</label>
+                        <select name="sexo" id="editSexo">
+                            <option value="">Seleccionar...</option>
+                            <option value="F">Femenino</option>
+                            <option value="M">Masculino</option>
+                        </select>
+
+                        <label>Ocupación:</label>
+                        <select name="ocupacion" id="editOcupacion" onchange="mostrarCampoTipoOcupacionEdit()">
+                            <option value="">Seleccionar...</option>
+                            <option value="estudiante">Estudiante</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="administrativo">Administrativo</option>
+                            <option value="obrero">Obrero</option>
+                        </select>
+
+                        <div id="tipoOcupacionContainerEdit" style="display: none;">
+                            <label id="tipoOcupacionLabelEdit" style="display: none;">Tipo:</label>
+                            <select name="tipo_ocupacion" id="tipoOcupacionEdit" style="display: none;">
+                            </select>
+                        </div>
+
+                        <label>Celular:</label>
+                        <input name="celular" id="editCelular" pattern="^\+[0-9]{10,15}$">
+
+                        <label>Ubicación:</label>
+                        <select name="ubicacion" id="editUbicacion">
+                            <option value="">Seleccionar...</option>
+                            <option value="Venezuela">Venezuela</option>
+                            <option value="Argentina">Argentina</option>
+                            <option value="España">España</option>
+                            <option value="Italia">Italia</option>
+                            <option value="Estados Unidos">Estados Unidos</option>
+                        </select>
+
+                        <button type="button" class="btn-secondary" onclick="cargarPersonaEditar()">Cargar Datos</button>
+                        <button type="submit">Actualizar Persona</button>
+                        <div id="mensajeEditar"></div>
+                    </form>
+                </div>
+
+                <!-- Sección 4: Eliminar -->
+                <div class="seccion">
+                    <h2>Eliminar Persona</h2>
+                    <form id="formEliminar">
+                        <label>ID de Persona a Eliminar *:</label>
+                        <input type="number" name="id" id="deleteId" required min="1">
+
+                        <button type="submit" class="btn-danger">Eliminar Persona</button>
+                        <div id="mensajeEliminar"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        if (window.location.protocol === 'file:') {
+            document.body.innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <div class="error">
+                        <strong>Error:</strong> Estás abriendo el archivo directamente.<br><br>
+                        <strong>Debes acceder desde el servidor PHP:</strong><br>
+                        1. Ejecuta <code>iniciar-servidor.bat</code><br>
+                        2. Abre en el navegador: <code>http://localhost:8000/frontend/persona.html</code><br>
+                        3. NO abras el archivo directamente con doble clic
+                    </div>
+                </div>
+            `;
+        }
+
+        function mostrarCRUD() {
+            document.getElementById('crudContainer').style.display = 'block';
+            document.getElementById('resultadoBusqueda').classList.remove('visible');
+        }
+
+        function ocultarCRUD() {
+            document.getElementById('crudContainer').style.display = 'none';
+        }
+
+        function mostrarCampoTipoOcupacion() {
+            const ocupacion = document.getElementById('ocupacion').value;
+            const container = document.getElementById('tipoOcupacionContainer');
+            const label = document.getElementById('tipoOcupacionLabel');
+            const select = document.getElementById('tipoOcupacion');
+            
+            // Limpiar opciones anteriores
+            select.innerHTML = '';
+            
+            if (ocupacion === 'estudiante') {
+                container.style.display = 'block';
+                label.style.display = 'block';
+                label.textContent = 'Tipo de Estudiante:';
+                select.style.display = 'block';
+                select.name = 'tipo_estudiante';
+                select.innerHTML = `
+                    <option value="">Seleccionar...</option>
+                    <option value="pregrado">Pregrado</option>
+                    <option value="postgrado">Postgrado</option>
+                    <option value="extension">Extensión</option>
+                `;
+            } else if (ocupacion === 'profesor') {
+                container.style.display = 'block';
+                label.style.display = 'block';
+                label.textContent = 'Tipo de Profesor:';
+                select.style.display = 'block';
+                select.name = 'tipo_profesor';
+                select.innerHTML = `
+                    <option value="">Seleccionar...</option>
+                    <option value="activo">Activo</option>
+                    <option value="jubilado">Jubilado</option>
+                `;
+            } else {
+                container.style.display = 'none';
+                label.style.display = 'none';
+                select.style.display = 'none';
+            }
+        }
+
+        function mostrarCampoTipoOcupacionEdit() {
+            const ocupacion = document.getElementById('editOcupacion').value;
+            const container = document.getElementById('tipoOcupacionContainerEdit');
+            const label = document.getElementById('tipoOcupacionLabelEdit');
+            const select = document.getElementById('tipoOcupacionEdit');
+            
+            // Limpiar opciones anteriores
+            select.innerHTML = '';
+            
+            if (ocupacion === 'estudiante') {
+                container.style.display = 'block';
+                label.style.display = 'block';
+                label.textContent = 'Tipo de Estudiante:';
+                select.style.display = 'block';
+                select.name = 'tipo_estudiante';
+                select.innerHTML = `
+                    <option value="">Seleccionar...</option>
+                    <option value="pregrado">Pregrado</option>
+                    <option value="postgrado">Postgrado</option>
+                    <option value="extension">Extensión</option>
+                `;
+            } else if (ocupacion === 'profesor') {
+                container.style.display = 'block';
+                label.style.display = 'block';
+                label.textContent = 'Tipo de Profesor:';
+                select.style.display = 'block';
+                select.name = 'tipo_profesor';
+                select.innerHTML = `
+                    <option value="">Seleccionar...</option>
+                    <option value="activo">Activo</option>
+                    <option value="jubilado">Jubilado</option>
+                `;
+            } else {
+                container.style.display = 'none';
+                label.style.display = 'none';
+                select.style.display = 'none';
+            }
+        }
+
+        async function buscarPersonas() {
+            const nombre = document.getElementById('buscarNombre').value.trim();
+            const ocupacion = document.getElementById('buscarOcupacion').value.trim();
+            
+            if (!nombre && !ocupacion) {
+                alert('Por favor ingresa al menos un criterio de búsqueda (nombre u ocupación)');
+                return;
+            }
+
+            const resultadoContenido = document.getElementById('resultadoContenido');
+            resultadoContenido.innerHTML = '<div class="cargando">Buscando...</div>';
+            document.getElementById('resultadoBusqueda').classList.add('visible');
+            ocultarCRUD();
+
+            try {
+                const params = new URLSearchParams();
+                if (nombre) params.append('nombre', nombre);
+                if (ocupacion) params.append('ocupacion', ocupacion);
+                
+                const response = await fetch(`${baseUrl}/backend/persona.php?accion=buscar&${params.toString()}`);
+                const text = await response.text();
+                const data = JSON.parse(text);
+                
+                if (!data.success) {
+                    resultadoContenido.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.personas.length === 0) {
+                    resultadoContenido.innerHTML = '<div class="vacio">No se encontraron personas con esos criterios.</div>';
+                    // Limpiar campos
+                    document.getElementById('buscarNombre').value = '';
+                    document.getElementById('buscarOcupacion').value = '';
+                    return;
+                }
+                
+                let html = '<div class="resultados-lista"><h3>Resultados de la búsqueda:</h3>';
+                data.personas.forEach(persona => {
+                    html += `
+                        <div class="resultado-item" onclick="verPerfilPorId(${persona.id})">
+                            <h4>${persona.nombres || ''} ${persona.apellidos || ''}</h4>
+                            <p><strong>ID:</strong> ${persona.id || ''}</p>
+                            <p><strong>Correo:</strong> ${persona.correo || ''}</p>
+                            <p><strong>Fecha de Nacimiento:</strong> ${persona.fecha_de_nacimiento || 'No especificada'}</p>
+                            <p><strong>Sexo:</strong> ${persona.sexo || 'No especificado'}</p>
+                            <p><strong>Ocupación:</strong> ${persona.ocupacion || 'No especificada'}</p>
+                            <p><strong>Celular:</strong> ${persona.celular || 'No especificado'}</p>
+                            <p><strong>Ubicación:</strong> ${persona.ubicacion_nombre || (persona.ubicacion_id ? 'ID: ' + persona.ubicacion_id : 'No especificada')}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                resultadoContenido.innerHTML = html;
+                
+                // Limpiar campos de búsqueda
+                document.getElementById('buscarNombre').value = '';
+                document.getElementById('buscarOcupacion').value = '';
+                
+            } catch (error) {
+                resultadoContenido.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function verPerfilCompleto() {
+            const id = document.getElementById('buscarId').value.trim();
+            if (!id) {
+                alert('Por favor ingresa el ID de la persona');
+                return;
+            }
+            await verPerfilPorId(id);
+        }
+
+        async function verPerfilPorId(id) {
+            const resultadoContenido = document.getElementById('resultadoContenido');
+            resultadoContenido.innerHTML = '<div class="cargando">Cargando perfil...</div>';
+            document.getElementById('resultadoBusqueda').classList.add('visible');
+            ocultarCRUD();
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/persona.php?accion=perfil&id=${id}`);
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    resultadoContenido.innerHTML = `<div class="error">Error: La respuesta del servidor no es JSON válido. ${text.substring(0, 200)}</div>`;
+                    return;
+                }
+                
+                if (!data.success) {
+                    resultadoContenido.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                const persona = data.persona;
+                const publicaciones = data.publicaciones || [];
+                
+                let html = '<div class="perfil-container">';
+                html += '<div class="perfil-info">';
+                html += '<h3>Perfil de ' + (persona.nombres || '') + ' ' + (persona.apellidos || '') + '</h3>';
+                html += '<p><strong>ID:</strong> ' + (persona.id || '') + '</p>';
+                html += '<p><strong>Correo:</strong> ' + (persona.correo || '') + '</p>';
+                html += '<p><strong>Nombres:</strong> ' + (persona.nombres || '') + '</p>';
+                html += '<p><strong>Apellidos:</strong> ' + (persona.apellidos || '') + '</p>';
+                html += '<p><strong>Fecha de Nacimiento:</strong> ' + (persona.fecha_de_nacimiento || 'No especificada') + '</p>';
+                html += '<p><strong>Sexo:</strong> ' + (persona.sexo || 'No especificado') + '</p>';
+                html += '<p><strong>Ocupación:</strong> ' + (persona.ocupacion || 'No especificada') + '</p>';
+                html += '<p><strong>Celular:</strong> ' + (persona.celular || 'No especificado') + '</p>';
+                html += '<p><strong>Ubicación:</strong> ' + (persona.ubicacion_nombre || (persona.ubicacion_id ? 'ID: ' + persona.ubicacion_id : 'No especificada')) + '</p>';
+                html += '</div>';
+                
+                html += '<div class="publicaciones-container">';
+                html += '<div class="publicaciones-grid">';
+                html += '<h3>Publicaciones</h3>';
+                if (publicaciones.length === 0) {
+                    html += '<p class="vacio" style="grid-column: 1 / -1;">Esta persona no tiene publicaciones.</p>';
+                } else {
+                    publicaciones.forEach(publicacion => {
+                        // Obtener el tipo de publicación
+                        const tipo = publicacion.Nombre_tipo_publ || publicacion.nombre_tipo_publ || 'Texto';
+                        const esImagen = tipo.toLowerCase().includes('imagen');
+                        const idPublicacion = publicacion.Id_Publicacion || publicacion.id_publicacion || publicacion.publicacion_id || '';
+                        const codigoPub = publicacion.Codigo_Pub || publicacion.codigo_pub || '';
+                        const fecha = publicacion.fecha || '';
+                        
+                        html += '<div class="publicacion-item">';
+                        html += '<p><strong>ID:</strong> ' + idPublicacion + '</p>';
+                        if (codigoPub) {
+                            html += '<p><strong>Código:</strong> ' + codigoPub + '</p>';
+                        }
+                        html += '<p><strong>Tipo:</strong> ' + tipo + '</p>';
+                        html += '<p><strong>Fecha:</strong> ' + fecha + '</p>';
+                        
+                        if (esImagen) {
+                            html += '<img src="https://via.placeholder.com/300x200/4CAF50/ffffff?text=Imagen" alt="Publicación de imagen">';
+                        } else {
+                            html += '<div style="width: 100%; height: 200px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; margin-top: 10px;">';
+                            html += '<p style="margin: 0; padding: 20px; text-align: center;">Publicación de Texto<br>Código: ' + codigoPub + '</p>';
+                            html += '</div>';
+                        }
+                        html += '</div>';
+                    });
+                }
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+                
+                resultadoContenido.innerHTML = html;
+                
+                // Limpiar campo de ID
+                document.getElementById('buscarId').value = '';
+                
+            } catch (error) {
+                resultadoContenido.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function cargarPersonas() {
+            const listaPersonas = document.getElementById('listaPersonas');
+            
+            try {
+                const response = await fetch(`${baseUrl}/backend/persona.php?accion=listar`);
+                const text = await response.text();
+                const data = JSON.parse(text);
+                
+                if (!data.success) {
+                    listaPersonas.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.personas.length === 0) {
+                    listaPersonas.innerHTML = '<div class="vacio">No hay personas registradas.</div>';
+                    return;
+                }
+                
+                let tabla = `
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Correo</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Fecha Nac.</th>
+                            <th>Sexo</th>
+                            <th>Ocupación</th>
+                            <th>Celular</th>
+                            <th>Ubicación</th>
+                        </tr>
+                `;
+                data.personas.forEach(persona => {
+                    tabla += `
+                        <tr>
+                            <td>${persona.id || ''}</td>
+                            <td>${persona.correo || ''}</td>
+                            <td>${persona.nombres || ''}</td>
+                            <td>${persona.apellidos || ''}</td>
+                            <td>${persona.fecha_de_nacimiento || ''}</td>
+                            <td>${persona.sexo || ''}</td>
+                            <td>${persona.ocupacion || ''}</td>
+                            <td>${persona.celular || ''}</td>
+                            <td>${persona.ubicacion_nombre || (persona.ubicacion_id ? 'ID: ' + persona.ubicacion_id : 'No especificada')}</td>
+                        </tr>
+                    `;
+                });
+                tabla += '</table>';
+                listaPersonas.innerHTML = tabla;
+                
+            } catch (error) {
+                listaPersonas.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function cargarPersonaEditar() {
+            const id = document.getElementById('editId').value;
+            if (!id) {
+                mostrarMensaje('mensajeEditar', 'Por favor ingresa el ID de la persona', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/persona.php?accion=obtener&id=${id}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    mostrarMensaje('mensajeEditar', data.error, 'error');
+                    return;
+                }
+                
+                const persona = data.persona;
+                document.getElementById('editId').value = persona.id || '';
+                document.getElementById('editCorreo').value = persona.correo || '';
+                document.getElementById('editNombres').value = persona.nombres || '';
+                document.getElementById('editApellidos').value = persona.apellidos || '';
+                document.getElementById('editFecha').value = persona.fecha_de_nacimiento || '';
+                document.getElementById('editSexo').value = persona.sexo || '';
+                document.getElementById('editOcupacion').value = persona.ocupacion || '';
+                document.getElementById('editCelular').value = persona.celular || '';
+                document.getElementById('editUbicacion').value = persona.ubicacion_nombre || '';
+                
+                // Mostrar campos de tipo de ocupación si corresponde
+                mostrarCampoTipoOcupacionEdit();
+                
+                // Establecer valores de tipo_estudiante o tipo_profesor si existen
+                if (persona.ocupacion === 'estudiante' && persona.tipo_estudiante) {
+                    const tipoSelect = document.getElementById('tipoOcupacionEdit');
+                    if (tipoSelect) {
+                        tipoSelect.value = persona.tipo_estudiante;
+                    }
+                } else if (persona.ocupacion === 'profesor' && persona.tipo_profesor) {
+                    const tipoSelect = document.getElementById('tipoOcupacionEdit');
+                    if (tipoSelect) {
+                        tipoSelect.value = persona.tipo_profesor;
+                    }
+                }
+                
+                mostrarMensaje('mensajeEditar', 'Datos cargados correctamente', 'success');
+            } catch (error) {
+                mostrarMensaje('mensajeEditar', 'Error: ' + error.message, 'error');
+            }
+        }
+
+        document.getElementById('formCrear').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'crear');
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/persona.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarMensaje('mensajeCrear', 'Persona creada exitosamente', 'success');
+                    this.reset();
+                    cargarPersonas();
+                } else {
+                    mostrarMensaje('mensajeCrear', data.error, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje('mensajeCrear', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('formEditar').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'actualizar');
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/persona.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarMensaje('mensajeEditar', 'Persona actualizada exitosamente', 'success');
+                    cargarPersonas();
+                } else {
+                    mostrarMensaje('mensajeEditar', data.error, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje('mensajeEditar', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('formEliminar').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'eliminar');
+
+            if (!confirm('¿Estás seguro de eliminar esta persona?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/backend/persona.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarMensaje('mensajeEliminar', 'Persona eliminada exitosamente', 'success');
+                    this.reset();
+                    cargarPersonas();
+                } else {
+                    mostrarMensaje('mensajeEliminar', data.error, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje('mensajeEliminar', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        function mostrarMensaje(id, mensaje, tipo) {
+            const div = document.getElementById(id);
+            div.innerHTML = `<div class="${tipo}">${mensaje}</div>`;
+            setTimeout(() => {
+                div.innerHTML = '';
+            }, 5000);
+        }
+
+        // Cargar personas al inicio
+        cargarPersonas();
+    </script>
+</body>
+</html>

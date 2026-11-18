@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Ubicaciones</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        
+        /* El mapa DEBE tener una altura definida para mostrarse */
+        #map { 
+            height: 500px; 
+            width: 100%; 
+            border-radius: 8px; 
+            border: 1px solid #ddd;
+        }
+
+        .info-panel { margin-top: 15px; padding: 10px; background: #e7f3ff; border-radius: 5px; font-size: 0.9em; }
+
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; border: 1px solid #ddd; padding: 15px; border-radius: 4px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, button,textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .btn-delete { background-color: #dc3545; padding: 5px; font-size: 12px; }
+
+        .navbar {
+            background-color: #4CAF50;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .navbar h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .navbar-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 1;
+        }
+        .navbar a {
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .navbar a.active {
+            background-color: white;
+            color: #4CAF50;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>SoyUCAB</h1>
+            <div class="navbar-buttons">
+                <a href="publicacion.html">Publicaciones</a>
+                <a href="persona.html">Personas</a>
+                <a href="evento.html">Eventos</a>
+                <a href="#">Grupos</a>
+                <a href="reportes.html">Reportes</a>
+                <a href="mapa.html" class="active">Mapa</a>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="container">
+        <h1>Mapa de Comunidad</h1>
+        <p>Visualiza la ubicación de las personas registradas en el sistema.</p>
+        
+        <div id="map"></div>
+
+        <div class="info-panel">
+            <b>Nota:</b> El mapa ubica a las personas según la Ciudad y País en su perfil.
+        </div>
+    </div>
+
+    <hr>
+    <div class="search-box" style="margin-bottom: 20px;">
+        <label for="buscador"><b>Buscar Persona:</b></label>
+        <input type="text" id="buscador" list="lista_personas" placeholder="Escribe un nombre..." style="padding: 8px; width: 250px; border-radius: 5px; border: 1px solid #ccc;">
+        <datalist id="lista_personas"></datalist>
+        <button onclick="buscarYResaltar()" style="padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">Ubicar</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+    <script>
+        // 3. Inicializar el mapa con límites de zoom
+        const map = L.map('map', {
+            center: [20, 0], // Coordenadas iniciales
+            zoom: 2,         // Zoom inicial
+            minZoom: 2,      // No permite alejarse más allá de ver el mundo completo
+            maxZoom: 12      // Permite ver la ciudad y alrededores, pero no la calle exacta
+        });
+
+        // 4. Cargar la capa de diseño (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            noWrap: true    // Evita que el mapa se repita infinitamente hacia los lados
+        }).addTo(map);
+
+
+
+
+        // --- lógica para bd ---
+
+        let marcadoresPersonas = {};
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        // 3. Función Principal: Cargar datos de la BD y geocodificar
+        async function inicializarMapa() {
+            try {
+                const response = await fetch('../backend/mapa.php?accion=listar_ubicaciones');
+                
+                // Verificamos si la respuesta es exitosa
+                if (!response.ok) throw new Error("Error en la comunicación con el servidor");
+
+                const data = await response.json();
+                console.log("Datos recibidos:", data); // Verifica esto en la consola
+
+                // VALIDACIÓN CLAVE: Si data no es un array, algo salió mal
+                if (!Array.isArray(data)) {
+                    console.error("El backend no devolvió una lista. Recibido:", data);
+                    return;
+                }
+
+                const datalist = document.getElementById('lista_personas');
+                datalist.innerHTML = ''; // Limpiamos por si acaso
+
+                // 1. Cargar nombres al buscador inmediatamente
+                data.forEach(user => {
+                    const nombreCompleto = `${user.nombres} ${user.apellidos}`;
+                    datalist.innerHTML += `<option value="${nombreCompleto}">`;
+                });
+
+                // 2. Ubicar pines progresivamente
+                for (const user of data) {
+                    const nombreCompleto = `${user.nombres} ${user.apellidos}`;
+                    const query = `${user.ciudad}, ${user.pais}`;
+
+                    try {
+                        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+                        const geoRes = await fetch(url);
+
+                        // Si el servicio responde con error 429 (Demasiadas peticiones)
+                        if (geoRes.status === 429) {
+                            console.warn(`Límite alcanzado para ${nombreCompleto}. Esperando...`);
+                            await delay(2000); // Esperamos un poco más
+                            continue; // Saltamos a la siguiente iteración para no romper el flujo
+                        }
+
+                        const geoData = await geoRes.json();
+
+                        if (geoData && geoData.length > 0) {
+                            const lat = parseFloat(geoData[0].lat);
+                            const lon = parseFloat(geoData[0].lon);
+
+                            const marker = L.marker([lat, lon]).addTo(map)
+                                .bindPopup(`<b>${nombreCompleto}</b><br>📍 ${user.ciudad}, ${user.pais}`);
+
+                            marcadoresPersonas[nombreCompleto] = { lat, lon, marker };
+                        }                      
+                    } catch (error) {
+                        // Si hay un error de red o timeout, lo atrapamos aquí
+                        console.error(`Error de red ubicando a ${nombreCompleto}:`, error);
+                    }
+                    
+                    // Espera de 1 segundo para Nominatim
+                    await delay(1500);
+                }
+            } catch (error) {
+                console.error("Error procesando los datos del mapa:", error);
+            }
+        }
+
+        
+        // 4. Función del Buscador: Resaltar y Volar
+        function buscarYResaltar() {
+            const input = document.getElementById('buscador');
+            const nombre = input.value;
+            const datos = marcadoresPersonas[nombre];
+
+            if (datos) {
+                // Vuelo suave hacia la ubicación
+                map.flyTo([datos.lat, datos.lon], 10, {
+                    animate: true,
+                    duration: 1.5 
+                });
+
+                // Abrir el popup automáticamente al llegar
+                setTimeout(() => {
+                    datos.marker.openPopup();
+                }, 1600);
+            } else {
+                alert("Persona no encontrada o su ubicación aún se está procesando...");
+            }
+        }
+
+        // 5. Arrancar todo al cargar la página
+        window.onload = inicializarMapa;
+    </script>
+</body>
+</html>
